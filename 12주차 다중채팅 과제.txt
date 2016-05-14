@@ -1,0 +1,358 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+
+public class Server {
+
+	HashMap<String, DataOutputStream> map;
+	ServerSocket server;
+	Server() {
+		map = new HashMap<String, DataOutputStream>();
+		Collections.synchronizedMap(map); // 스레드관련동기화
+
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		Server myServer = new Server();
+		myServer.startServer();
+	}
+
+	void startServer() throws Exception {
+		Socket client;
+		server = new ServerSocket(10001);
+		System.out.println("멀티채팅방 개설됨");
+		while (true) {
+			client = server.accept();
+			ServerReciver reciver = new ServerReciver(client);
+			reciver.start();
+
+		}
+
+	}
+
+	class ServerReciver extends Thread {
+		Socket socket;
+		DataInputStream input;
+		DataOutputStream output;
+
+		ServerReciver(Socket client) throws Exception {
+			this.socket = client;
+			input = new DataInputStream(socket.getInputStream());
+			output = new DataOutputStream(socket.getOutputStream());
+		}
+
+		public void run() {
+
+			String name = "";
+			try {
+
+				name = input.readUTF();
+				Iterator<String> user = map.keySet().iterator();
+
+			if (map.containsKey(name)) {
+					JOptionPane.showMessageDialog(null, "중복된 아이디 입니다. \n 다시 실행해주세요");
+					socket.close();
+					
+				} 
+			
+				sendToAll(name + "님이 접속했습니다.");
+				// 접속자, 출구를해쉬맵에등록
+				map.put(name, output);
+				
+				
+				// 서버에현재사용자인원수출력(옵션)
+				System.out.println("현재 " + map.size() + "명이 채팅중.."); // size는해쉬맵이몇개인지자동으로새줌
+				System.out.print("현재접속자 : ");
+				Iterator<String> nameIt = map.keySet().iterator();
+				
+				while (nameIt.hasNext()) {
+
+					String str = nameIt.next();	
+					output.writeUTF(str + " ");
+					System.out.print(str + " ");	
+	
+				}
+				
+				System.out.println("");
+				// 접속자의대화를계속모든사용자에게전송..
+				while (input != null) {
+					sendToAll(input.readUTF());
+				}
+				
+			 }catch (Exception e) {
+			} finally {
+				map.remove(name);
+				sendToAll(name + "님이 나갔습니다.");
+				System.out.println("현재 " + map.size() + "명이 채팅중..");
+				System.out.print("현재접속자: ");
+				Iterator<String> nameIt = map.keySet().iterator();
+				while (nameIt.hasNext()) {
+		
+					String str = nameIt.next();			
+					System.out.print(str + " ");
+				}
+				System.out.println("");
+
+			}
+		}
+
+		public void sendToAll(String message) {
+			// 메세지를모든접속자(HashMap)에게전송하기..
+
+			Iterator<String> it = map.keySet().iterator();
+
+			while (it.hasNext()) {
+				try {
+				
+					DataOutputStream dos = map.get(it.next());
+					dos.writeUTF(message);
+
+				} catch (Exception e) {
+
+				}
+
+			}
+			System.out.println(message);
+
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Socket;
+import java.util.Random;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+public class Client extends JFrame {
+
+	String userName;
+	Socket socket;
+
+	public static void main(String[] args) throws Exception {
+		Client client = new Client();
+		client.start();
+
+	}
+
+	// 여기서 화면 완성하기
+
+	JLabel lb1, lb2, lb3, lb4;
+	JTextArea area, area2;
+	JScrollPane scroll;
+	JTextField userid, msg;
+	JButton send;
+
+	void makeGUI() {
+		setTitle("자바톡");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setResizable(false);
+		setLayout(null);
+
+		lb1 = new JLabel("대화창");
+		lb1.setBounds(5, 3, 100, 30);
+		this.add(lb1);
+		
+		lb4 = new JLabel("접속자");
+		lb4.setBounds(302, 3, 100, 30);
+		this.add(lb4);
+
+		area = new JTextArea(10, 10);
+		// 랜덤 색상 추출
+		Random rand = new Random();
+		float r = rand.nextFloat();
+		float g = rand.nextFloat();
+		float b = rand.nextFloat();
+		Color randColor = new Color(r, g, b);
+		area.setBackground(randColor.brighter());
+		area.setEditable(false);
+		
+		area2 = new JTextArea(10, 10);
+		area2.setBounds(297, 30, 50, 200);
+		this.add(area2);
+
+		scroll = new JScrollPane(area);
+		scroll.setBounds(5, 30, 285, 400);
+		this.add(scroll);
+
+		lb2 = new JLabel("아이디");
+		lb2.setBounds(10, 450, 200, 30);
+		this.add(lb2);
+
+		userid = new JTextField(10);
+		userid.setBackground(Color.lightGray);
+		userid.setBounds(57, 450, 230, 30);
+		userid.setEditable(false);
+		this.add(userid);
+
+		lb3 = new JLabel("메시지");
+		lb3.setBounds(10, 485, 50, 30);
+		this.add(lb3);
+
+		msg = new JTextField(10);
+		msg.setBounds(57, 485, 230, 30);
+		this.add(msg);
+
+		send = new JButton("전송");
+		send.setBounds(292, 403, 60, 25);
+		this.add(send);
+
+		pack();
+		setSize(360, 560);
+		setVisible(true);
+	}
+
+	/////////////////////////////////////////
+	void start() throws Exception {
+
+		userName = JOptionPane.showInputDialog("아이디 입력");
+		if (userName.trim().equals("")) // trim은 공백을 자른다.
+			System.exit(0);
+
+		makeGUI();
+		userid.setText(userName);
+
+		socket = new Socket("127.0.0.1", 10001);
+		(new ClientReceiver(socket)).start();
+		(new ClientSender(socket)).start();
+	}
+
+	class ClientReceiver extends Thread {
+
+		Socket socket;
+		DataInputStream in;
+
+		ClientReceiver(Socket socket) throws Exception {
+			this.socket = socket;
+			in = new DataInputStream(socket.getInputStream());
+
+		}
+
+		public void run() {
+
+			while (in != null) {
+				try {
+				
+					String getData = in.readUTF();
+					int len = getData.length();
+					if( len == 0){}
+					else{
+						char b = getData.charAt(getData.length() -1);
+						
+						if(b ==' '){
+							area2.setText(area2.getText().toString() + "\n" + getData);
+						}
+							
+					
+				
+					area.setText(area.getText().toString() + "\n" + getData); // 기존거에 이어서 나오도록
+					}
+				} catch (Exception e) {
+				}
+			}
+		}
+
+	}
+
+	class ClientSender extends Thread {
+
+		Socket socket;
+		DataOutputStream out;
+
+		ClientSender(Socket socket) throws Exception { // 무조건 실행
+			this.socket = socket;
+			out = new DataOutputStream(socket.getOutputStream());
+			out.writeUTF(userName);
+			area.setText(area.getText().toString() + "\n" + "채팅방에 입장했습니다.");
+
+		}
+
+		public void run() {
+
+			String data = "";
+			msg.addKeyListener(new KeyListener() {
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					 int c=e.getKeyChar();
+					 if(c==KeyEvent.VK_ENTER){
+					try {
+						String data = msg.getText().toString();
+						if (data.equals("exit"))
+							System.exit(0);
+						else
+							out.writeUTF("[" + userName + "] " + data + "\n");
+						msg.setText("");
+					} catch (Exception ee) {
+					}
+					 }
+				}
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void keyTyped(KeyEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			send.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						String data = msg.getText().toString();
+						if (data.equals("exit"))
+							System.exit(0);
+						else
+							out.writeUTF("[" + userName + "] " + data + "\n");
+						msg.setText("");
+					} catch (Exception ee) {
+					}
+
+				}
+
+			});
+
+		}
+
+	}
+
+}

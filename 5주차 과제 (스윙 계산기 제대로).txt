@@ -1,0 +1,414 @@
+package calc;
+
+
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.Socket;
+
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+
+public class calc extends JFrame{
+	
+	int count = 0;
+	
+	Container pane;
+	JLabel label1, label2, label3;
+	JTextField field1, field2, field3;
+	JButton btn, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10, btn11, btn12, btn13, btn14, btn15;
+	protected AbstractButton textField;
+	
+
+	public static void main(String[] args) {
+		calc myGui = new calc(); //인스턴스만 만든다
+	
+	}	
+	
+
+		
+	
+	
+	calc() {
+			setTitle("2012621011 남윤광 [최종본]");
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //x표시를 누르면 닫힐 수 있게 한다.
+			pane = getContentPane(); //칠판
+			
+			setLayout(null); //칠판을 어떻게 배열할거냐?
+			
+			//이 부분에서 배치///
+			btn1 = new JButton("+");
+			btn1.setBounds(370, 130, 100, 50);
+			pane.add(btn1);
+			btn2 = new JButton("-");
+			btn2.setBounds(370, 200, 100, 50);
+			pane.add(btn2);
+			btn3 = new JButton("*");
+			btn3.setBounds(370, 270, 100, 50);
+			pane.add(btn3);
+			btn4 = new JButton("/");
+			btn4.setBounds(370, 340, 100, 50);
+			pane.add(btn4);
+			btn5 = new JButton("1");
+			btn5.setBounds(10, 130, 100, 50);
+			pane.add(btn5);
+			btn6 = new JButton("2");
+			btn6.setBounds(130, 130, 100, 50);
+			pane.add(btn6);
+			btn7 = new JButton("3");
+			btn7.setBounds(250, 130, 100, 50);
+			pane.add(btn7);
+			btn8 = new JButton("4");
+			btn8.setBounds(10, 200, 100, 50);
+			pane.add(btn8);
+			btn9 = new JButton("5");
+			btn9.setBounds(130, 200, 100, 50);
+			pane.add(btn9);
+			btn10 = new JButton("6");
+			btn10.setBounds(250, 200, 100, 50);
+			pane.add(btn10);
+			btn11 = new JButton("7");
+			btn11.setBounds(10, 270, 100, 50);
+			pane.add(btn11);
+			btn12 = new JButton("8");
+			btn12.setBounds(130, 270, 100, 50);
+			pane.add(btn12);
+			btn13 = new JButton("9");
+			btn13.setBounds(250, 270, 100, 50);
+			pane.add(btn13);
+			btn14 = new JButton("0");
+			btn14.setBounds(130, 340, 100, 50);
+			pane.add(btn14);
+			btn15 = new JButton("CLEAR");
+			btn15.setBounds(250, 340, 100, 50);
+			pane.add(btn15);
+			
+			
+			label1 = new JLabel("첫 번째 숫자");
+			label1.setBounds(10, 10, 150, 50);
+			pane.add(label1);
+			field1 = new JTextField(10);
+			field1.setBounds(100, 20, 150, 30);
+			pane.add(field1);
+			
+			label2 = new JLabel("두 번째 숫자");
+			label2.setBounds(10, 70, 150, 50);
+			pane.add(label2);
+			field2 = new JTextField(10);
+			field2.setBounds(100, 80, 150, 30);
+			pane.add(field2);
+			label3 = new JLabel("연산자");
+			label3.setBounds(10, 40, 150, 50);
+			pane.add(label3);
+			field3 = new JTextField(10);
+			field3.setBounds(100, 50, 150, 30);
+			pane.add(field3);
+			
+			
+			
+			btn = new JButton("계산하기");
+			btn.setBounds(10, 340, 100, 50);
+			pane.add(btn);
+			
+			//버튼에 리스너 만들기
+			
+			
+			btn.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+					
+					
+					
+				
+					String data;
+					String a,b;
+					String c;
+					a = field1.getText().toString();
+					b = field2.getText().toString();
+					c = field3.getText().toString();
+					data = a.toString() + "," + c.toString() + "," + b.toString();
+			
+					//서버와 연결되는 코드들
+					try{
+					Socket socket = null;
+					System.out.println("Client : 식당에 찾아가는 중... ");
+					socket = new Socket("127.0.0.1", 10001);
+					System.out.println("Client : 식당 찾았어 ? " + socket.isConnected());
+
+					OutputStream stream = socket.getOutputStream();
+					BufferedOutputStream out = new BufferedOutputStream(stream);
+					byte[] bytes = data.getBytes();
+					out.write(bytes);
+					out.close();
+					socket.close();
+					} catch (Exception ee){}
+					JOptionPane.showMessageDialog(null, "보냈음");
+					
+					switch(field3.getText().toString()){ 
+					case "+" :
+						Integer sum = Integer.parseInt(field1.getText().toString()) + Integer.parseInt(field2.getText().toString());
+			
+						break;
+					case "-" :
+						Integer sum1 = Integer.parseInt(field1.getText().toString()) - Integer.parseInt(field2.getText().toString());
+				
+						break;
+					case "*" :
+						Integer sum2 = Integer.parseInt(field1.getText().toString()) * Integer.parseInt(field2.getText().toString());
+				
+						break;
+					case "/" :
+						Integer sum3 = Integer.parseInt(field1.getText().toString()) / Integer.parseInt(field2.getText().toString());
+					
+						break;
+					
+			
+					}	
+					
+					}
+				});
+
+			btn1.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+					count = 1;
+					
+					field3.setText("+"); 			 // 텍스트창 내용 지우고 0출력
+					field3.getText();
+					
+																						
+				}
+			});
+		
+			btn2.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+					count = 2;
+					field3.setText("-"); 			 // 텍스트창 내용 지우고 0출력
+					field3.getText();	
+					
+					
+				}
+			});
+	
+			btn3.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+		
+		@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+			count = 3;
+			field3.setText("*"); 			 // 텍스트창 내용 지우고 0출력
+			field3.getText();	
+			
+			
+			}
+				});
+			btn4.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+		
+		@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+			count = 4;
+			field3.setText("/"); 			 // 텍스트창 내용 지우고 0출력
+			field3.getText();				
+			
+			}
+				});		
+			
+			btn5.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+						public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+				
+					if (  count == 0) {
+						String set = field1.getText() + "1";
+						field1.setText(set);}
+					else {
+						String set = field2.getText() + "1";
+						field2.setText(set);}
+					}}
+					
+								
+				
+					
+						);	
+btn6.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+						public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+				
+					
+					
+					if (  count == 0) {
+						String set = field1.getText() + "2";
+						field1.setText(set);}
+					else {
+						String set = field2.getText() + "2";
+						field2.setText(set);}
+					
+					}
+						});	
+btn15.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+		count =0;
+		field1.setText(""); 			 // 텍스트창 내용 지우고 0출력
+		field1.getText();
+		field2.setText(""); 			 // 텍스트창 내용 지우고 0출력
+		field2.getText();
+		field3.setText(""); 			 // 텍스트창 내용 지우고 0출력
+		field3.getText();
+	
+		
+		
+	
+		
+		}
+			});	
+btn7.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+
+
+		if (  count == 0) {
+			String set = field1.getText() + "3";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "3";
+			field2.setText(set);}
+		
+		}
+			});	
+btn8.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+		
+
+	
+		if (  count == 0) {
+			String set = field1.getText() + "4";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "4";
+			field2.setText(set);}
+		
+		}
+			});	
+btn9.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+	
+
+		if (  count == 0) {
+			String set = field1.getText() + "5";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "5";
+			field2.setText(set);}
+		
+		
+		}
+			});	
+btn10.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+
+		if (  count == 0) {
+			String set = field1.getText() + "6";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "6";
+			field2.setText(set);}
+		
+		}
+			});	
+btn11.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+	
+	
+		if (  count == 0) {
+			String set = field1.getText() + "7";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "7";
+			field2.setText(set);}
+		
+		}
+		}
+			);	
+btn12.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+
+		if (  count == 0) {
+			String set = field1.getText() + "8";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "8";
+			field2.setText(set);}
+		
+		}
+		
+		}
+		);	
+btn13.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+		
+		
+
+		if (  count == 0) {
+			String set = field1.getText() + "9";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "9";
+			field2.setText(set);}
+		
+		}
+			});	
+btn14.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+	
+	@Override
+			public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+
+	
+		if (  count == 0) {
+			String set = field1.getText() + "0";
+			field1.setText(set);}
+		else {
+			String set = field2.getText() + "0";
+			field2.setText(set);}
+		
+		}
+			});	
+
+
+
+			/////////////////////
+			setSize(512, 450);
+			setVisible(true);
+			
+			
+		}
+	}

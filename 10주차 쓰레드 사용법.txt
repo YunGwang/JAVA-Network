@@ -1,0 +1,41 @@
+
+public class MyThread {
+
+	public static void main(String[] args) {
+	
+     	// 슈퍼 클래스
+		class Car {
+			String carName;
+		}
+		// 서브 클래스
+		class Truck extends Car implements Runnable{
+		
+			Truck(String carName) {
+				this.carName = carName;
+
+			}
+
+			public void run() {
+				for (int i = 0; i < 5; i++) {
+					try {
+						Thread.sleep(500);
+						System.out.println(carName + " ~~ 달리고 있음");
+					} catch (Exception e) {
+					}
+
+				}
+			}
+		}
+
+		// 자동차 3대 찍어내기..(인스턴스화)
+		//Truck truck1 = new Truck("부가티 베이론) 이걸 한 줄로 바꾼 것
+		Thread truck1 = new Thread(new Truck("부가티베이론"));
+		Thread truck2 = new Thread(new Truck("람보르기니 아벤타도르"));
+		Thread truck3 = new Thread(new Truck("페라리"));
+
+		truck1.start(); // Thread를 상속받으면 run을 안 쓰고 start를 써주면 된다. (car1,2,3가 동시에 실행됨)
+		truck2.start();
+		truck3.start();
+	}
+
+}

@@ -1,0 +1,87 @@
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class ServerNYK {
+
+	public static void main(String[] args) throws Exception { //throws Exception server = new ServerSocket(x)에러가 뜰경우
+		
+		ServerNYK myserver = new ServerNYK(); //생성자 만들고
+		myserver.startServer();//메소듬 만들고
+
+	}
+	
+	public void startServer() throws Exception{
+		
+		ServerSocket server = null; //서버준비
+		Socket client = null; //클라이언트 준비 
+		
+		server = new ServerSocket(10001); //10001번으로 지정 
+		
+		System.out.println("Server :  요청을 기다리는 중  ....");
+		client = server.accept();
+		//전체적으로 서버 프로그래밍을 한 것
+		System.out.println("Server :  요청을 받았음");
+		
+		//실제 작동하기....
+		InputStream stream = client.getInputStream(); //걔가 던지는 걸 받아서 버퍼가 읽을 수 있게 준비해 놓는다. 통을 준비함 in에 너헝놈
+		BufferedReader in = new BufferedReader(new InputStreamReader(stream)); 
+		
+		String data = null;
+		StringBuilder receivedData = new StringBuilder(); //문자열을 집어넣기 위해 준비함 in에 패스
+		while ( (data = in.readLine()) != null) // 널값이 아닐경우 읽어내라 , in.readLine = 통 이름이 in 한 줄씩 읽어서 receivedData에 append시킨다.
+			receivedData.append(data);
+		System.out.println("받은 데이터  : " + receivedData); //그 후 화면에 출력 
+							
+		//끝 ....
+		
+		client.close();//영업 끝났어요
+		server.close();	
+				
+	}
+
+}
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Date;
+
+public class ClientNYK {
+
+	public static void main(String[] args) throws Exception{
+		
+		ClientNYK myclient = new ClientNYK();
+		myclient.sendData(); 
+		
+	}
+	
+	public void sendData() throws Exception{	
+			
+		Socket  socket  = null;
+		System.out.println("Client : 서버에 연결중 ...."); //클라이언트는 기다리지 않고 바로 간다.
+		socket = new Socket("210.102.149.133", 10001);
+		System.out.println("Client : 연결 상태  = " +socket.isConnected());
+		
+		//여기서 작업할 내용을 코딩
+		
+		Thread.sleep(1000); //1초 쉬고
+		
+		OutputStream stream = socket.getOutputStream(); //out스트림을 준비한다.
+		BufferedOutputStream out = new BufferedOutputStream(stream);
+		String data = "안녕하세요? 남윤광님  " + new Date(); //현재 날짜 시간도 같이 보낸다.
+		byte[] bytes = data.getBytes(); //data가 바이트 값을 받아서 
+		out.write(bytes); //써서 서버에 던져버린다.
+		System.out.println("Client : 데이터 전송 완료");
+		//끝
+		
+		out.close();
+		socket.close();
+		}
+	}
+	
+
+

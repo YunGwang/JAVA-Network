@@ -1,0 +1,116 @@
+입력받은 숫자를 서버에 보낸다음 서버에서 계산하는 프로그램
+
+또한 무한루프를 돌려서  손님을 계속받음
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class NYKServer {
+
+	public static void main(String[] args) throws Exception {
+		
+		NYKServer myServer = new NYKServer();
+		myServer.startServer();
+		
+	}
+	
+	void startServer() throws Exception{
+		
+		ServerSocket server = null;
+		Socket client = null;
+		server = new ServerSocket(10001); //소켓에 데한 정희
+		
+		//여기부터 본격적인 내부..
+		
+		while(true) { //무한루프 (손님을 계속 받아야함)
+			System.out.println("Server : 손님을 기다리는중... ");
+			client =  server.accept();
+			System.out.println("Server : 어서오세요~");
+			
+			InputStream stream = client.getInputStream();//손님이 보낸 데이터를 받는것
+			BufferedReader in = new BufferedReader(new InputStreamReader(stream)); //바퍼리더에 옮겨 담는 것
+			String data = null;
+			StringBuilder receivedData = new StringBuilder(); //in에 있는걸 꺼내서 receivedData 여기에 쌓아놓는 것
+			while( (data = in.readLine()) != null){//손님이 갖고 온것중에서 한 줄을 빼 놓은 것 // 널인지 아닌지 판별
+				receivedData.append(data); //append는 첨가란 뜻		
+			}
+			// 받은 데이터를 콤마로 분리하기
+			String[] str;
+			str = (receivedData.toString()).split(", ");
+			Integer a,b;
+			a = Integer.parseInt(str[0]);
+			b = Integer.parseInt(str[1]);
+			
+			System.out.println("Server (받은 데이터) : " + receivedData);
+			System.out.println("Server (계산된 데이터) : " + (a+b));
+			System.out.println("Server (계산된 데이터) : " + (a-b));
+			System.out.println("Server (계산된 데이터) : " + (a*b));
+			System.out.println("Server (계산된 데이터) : " + (a/b));
+			if(a/b ==0)
+				System.out.println("0으로 나누면 안됨");
+			in.close();
+			stream.close();
+			if(receivedData.toString().equals("EXIT")) //손님이 EXIT이란 단어를 보내면 무한루프를 끝낸다.
+				break;	
+		}	
+		client.close();
+		server.close();
+				
+	}
+}
+
+
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Scanner;
+
+public class NYKClient {
+	
+public static void main(String[] args)throws Exception{
+	NYKClient myClient = new NYKClient();
+		myClient.sendData();
+		
+		
+	}
+
+void sendData() throws Exception{
+	// 숫자를 2개 입력 받아서 콤마로 분리 후 묶는다.
+	String data;
+	Scanner scan = new Scanner(System.in);
+	Integer a,b;
+	System.out.println("첫번째 숫자를 입력하세요");
+	a = scan.nextInt();
+	System.out.println("두번째 숫자를 입력하세요");
+	b = scan.nextInt();
+	
+	data = a.toString() + ", " + b.toString();
+	
+	//서버와 연결되는 코드
+	Socket socket = null;
+	System.out.println("Client : 식당에 찾아가는 중... ");
+	socket = new Socket("210.102.149.133", 10001);
+	System.out.println("Client : 식당 찾았어 ? " + socket.isConnected());
+	
+	OutputStream stream = socket.getOutputStream();
+	BufferedOutputStream out = new BufferedOutputStream(stream);
+	
+	byte[] bytes = data.getBytes();
+	out.write(bytes);
+	System.out.println("Client : 데이터 전송 완료");
+	out.close();
+	socket.close();
+	
+	
+	
+	
+	
+	
+	
+}
+
+
+}

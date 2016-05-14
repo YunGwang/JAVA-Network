@@ -1,0 +1,244 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.io.DataInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.DataOutputStream;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+
+public class Server extends JFrame{
+
+	DataInputStream in;
+	DataOutputStream out;
+	JLabel lb1, lb2, lb3;
+	JTextArea area;
+	JTextField userid;
+	JTextField msg;
+	JButton btnSend;
+	JScrollPane scroll;
+	
+
+	Server() {
+		setTitle("관리자");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLayout(null);
+		
+
+		lb1 = new JLabel("관리자");
+		lb1.setBounds(10, 10, 100, 30);
+		this.add(lb1);
+
+		area = new JTextArea(10, 10); // 10행 10열
+		area.setEditable(false); // 에어리어에 글자가 안 써지게 한다.
+		scroll = new JScrollPane(area);
+		scroll.setBounds(0, 40, 205, 300);
+		this.add(scroll);
+
+		lb2 = new JLabel("ID");
+		lb2.setBounds(20, 345, 50, 30);
+	
+		this.add(lb2);
+		userid = new JTextField(10);
+		userid.setBounds(50, 345, 140, 30);
+		this.add(userid);
+
+		lb3 = new JLabel("메시지");
+		lb3.setBounds(5, 375, 50, 30);
+		this.add(lb3);
+		msg = new JTextField(10);
+		msg.setBounds(50, 375, 140, 30);
+		this.add(msg);
+
+		btnSend = new JButton("보내기");
+		btnSend.setBounds(50, 408, 100, 30);
+		this.add(btnSend);
+
+		setSize(210, 470);
+		
+		btnSend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String msg2 = "[" + userid.getText().toString() + "] " + msg.getText().toString();
+				if ("".equals(msg))
+					return;
+				if (out != null) {
+					try {
+						out.writeUTF(msg2);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+				area.append("\n" + msg2);
+				msg.setText("");
+			}});
+
+	
+		
+		area.setEditable(false);
+		 
+		  setResizable(false); // 크기 변경 불가
+		  setVisible(true);
+		
+		
+		serverStart();
+	}
+
+	public void serverStart() {
+		try {
+			ServerSocket S_socket = new ServerSocket(10001);
+			Socket socket = S_socket.accept();
+			area.append("고객과 연결 완료\n");
+			in = new DataInputStream(socket.getInputStream());
+			out = new DataOutputStream(socket.getOutputStream());
+			while (in != null) {
+				String msg2 = in.readUTF();
+				area.append("\n" + msg2);
+			}
+
+		} catch (IOException e) {
+			area.setText("서버소켓 설정 실패\n");
+		}
+	}
+
+	public static void main(String[] args) {
+		Server server = new Server();
+	}
+
+
+}
+
+
+
+
+
+import java.awt.BorderLayout;
+import java.awt.Panel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+public class Client extends JFrame {
+	String serverIP = "127.0.0.1";
+	int serverPort = 10001;
+	JLabel lb1, lb2, lb3;
+	DataInputStream in;
+	DataOutputStream out;
+	static JTextArea area;
+	static JTextField userid;
+	static JTextField msg;
+	static JButton btnSend;
+	JScrollPane scroll;
+
+
+	Client() {
+
+		setTitle("고객");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLayout(null);
+		lb1 = new JLabel("고객");
+		lb1.setBounds(10, 10, 100, 30);
+		this.add(lb1);
+
+		area = new JTextArea(10, 10); // 10행 10열
+		area.setEditable(false); // 에어리어에 글자가 안 써지게 한다.
+		scroll = new JScrollPane(area);
+		scroll.setBounds(0, 40, 205, 300);
+		this.add(scroll);
+
+		lb2 = new JLabel("ID");
+		lb2.setBounds(20, 345, 50, 30);
+		this.add(lb2);
+		userid = new JTextField(10);
+		userid.setBounds(50, 345, 140, 30);
+		this.add(userid);
+
+		lb3 = new JLabel("메시지");
+		lb3.setBounds(5, 375, 50, 30);
+		this.add(lb3);
+		msg = new JTextField(10);
+		msg.setBounds(50, 375, 140, 30);
+		this.add(msg);
+
+		btnSend = new JButton("보내기");
+		btnSend.setBounds(50, 408, 100, 30);
+		this.add(btnSend);
+
+		setSize(210, 470);
+
+		btnSend.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String msg2 = "[" + userid.getText().toString() + "] " + msg.getText().toString();
+				if ("".equals(msg))
+					return;
+				if (out != null) {
+					try {
+						out.writeUTF(msg2);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				area.append("\n" +msg2);
+				msg.setText("");
+			}
+		});
+		
+		area.setEditable(false);
+	
+		setResizable(false); // 크기 변경 불가
+		setVisible(true);
+		
+	}
+
+	public static void main(String[] args) {
+
+		try {
+			Client client = new Client();
+			client.startClient();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void startClient() throws UnknownHostException, IOException {
+		Socket socket = new Socket(serverIP, serverPort);
+		area.setText("관리자와 연결되었습니다.\n");
+		in = new DataInputStream(socket.getInputStream());
+		out = new DataOutputStream(socket.getOutputStream());
+		while (in != null) {
+			String msg2 = in.readUTF();
+			area.append("\n" + msg2);
+		}
+	}}

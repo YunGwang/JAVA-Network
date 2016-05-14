@@ -1,0 +1,260 @@
+	
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+ public static void main(String[] args) throws Exception {
+  Server myServer = new Server();
+  myServer.startServer();
+ }
+ 
+ void startServer() throws Exception {
+  ServerSocket server = null;
+  Socket client = null;
+  server = new ServerSocket(10001);  
+  
+  
+  ///////////////////////////////////
+  /// 여기가 본격적인 식당/노래방/극장 내부...
+  while(true) {  // 무한루프 (손님을 계속 접대하러...)
+   System.out.println("Server : 손님을 기다리는 중..");
+   client = server.accept();
+   
+   InputStream stream = client.getInputStream();
+   BufferedReader in = new BufferedReader(
+       new InputStreamReader(stream));
+   
+   String data = null;
+   StringBuilder  receivedData = new StringBuilder();
+   while( (data = in.readLine()) != null) {
+    receivedData.append(data);
+   }
+   // 받은 데이터를 콤마로 분리하기.
+   String[] str;
+	str = (receivedData.toString()).split(",");
+	Integer a,b;
+	String c;
+	
+	a = Integer.parseInt(str[0]);
+	b = Integer.parseInt(str[2]);
+	c = String(str[1]);
+	
+	System.out.println("Server (받은 데이터) : " + receivedData);
+	if(str[1].equals("+"))
+		System.out.println("Server 계산값 :  " + (a+b) );
+	else if (str[1].equals("-"))
+		System.out.println("Server 계산값 : " + (a-b) );
+	else if (str[1].equals("*"))
+		System.out.println("Server 계산값 :  " + (a*b) );
+	else if (str[1].equals("/")){
+		if ( a == 0 || b == 0) 
+		System.out.println("Server : 0으로 나누면 안 됨 ");
+	else 
+		System.out.println("Server 계산값 : " + (a/b));			
+	}in.close();
+	stream.close();
+	if(receivedData.toString().equals("EXIT")) //손님이 EXIT이란 단어를 보내면 무한루프를 끝낸다.
+		break;	
+}	
+ }
+
+private String String(String string) {
+	// TODO Auto-generated method stub
+	return null;
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+
+public class Client extends JFrame{
+	
+	Container pane;
+	JLabel label1, label2, label3;
+	JTextField field1, field2, field3;
+	JButton btn, btn1, btn2, btn3, btn4;
+	
+
+	public static void main(String[] args) {
+		Client myGui = new Client(); //인스턴스만 만든다
+	}	
+	
+	Client() {
+			setTitle("볼품없는 계산기");
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //x표시를 누르면 닫힐 수 있게 한다.
+			pane = getContentPane(); //칠판
+			
+			setLayout(null); //칠판을 어떻게 배열할거냐?
+			
+			//이 부분에서 배치///
+			btn1 = new JButton("더하기");
+			btn1.setBounds(90, 260, 80, 30);
+			pane.add(btn1);
+			btn2 = new JButton("빼기");
+			btn2.setBounds(180, 260, 80, 30);
+			pane.add(btn2);
+			btn3 = new JButton("곱하기");
+			btn3.setBounds(270, 260, 80, 30);
+			pane.add(btn3);
+			btn4 = new JButton("나누기");
+			btn4.setBounds(360, 260, 80, 30);
+			pane.add(btn4);
+			
+			label1 = new JLabel("첫 번째 숫자");
+			label1.setBounds(140, 130, 120, 50);
+			pane.add(label1);
+			field1 = new JTextField(10);
+			field1.setBounds(230, 135, 120, 30);
+			pane.add(field1);
+			
+			label2 = new JLabel("두 번째 숫자");
+			label2.setBounds(140, 210, 120, 50);
+			pane.add(label2);
+			field2 = new JTextField(10);
+			field2.setBounds(230, 215, 120, 30);
+			pane.add(field2);
+			label3 = new JLabel("연산자");
+			label3.setBounds(140, 170, 120, 50);
+			pane.add(label3);
+			field3 = new JTextField(10);
+			field3.setBounds(230, 175, 120, 30);
+			pane.add(field3);
+			
+			
+			
+			btn = new JButton("계산하기");
+			btn.setBounds(200, 330, 120, 50);
+			pane.add(btn);
+			
+			//버튼에 리스너 만들기
+			btn.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+					
+					Client myClient = new Client();
+					String data;
+					String a,b;
+					String c;
+					a = field1.getText().toString();
+					b = field2.getText().toString();
+					c = field3.getText().toString();
+					data = a.toString() + "," + c.toString() + "," + b.toString();
+			
+					//서버와 연결되는 코드들
+					try{
+					Socket socket = null;
+					System.out.println("Client : 식당에 찾아가는 중... ");
+					socket = new Socket("127.0.0.1", 10001);
+					System.out.println("Client : 식당 찾았어 ? " + socket.isConnected());
+
+					OutputStream stream = socket.getOutputStream();
+					BufferedOutputStream out = new BufferedOutputStream(stream);
+					byte[] bytes = data.getBytes();
+					out.write(bytes);
+					out.close();
+					socket.close();
+					} catch (Exception ee){}
+					JOptionPane.showMessageDialog(null, "보냈음");
+					
+					switch(field3.getText().toString()){ 
+					case "+" :
+						Integer sum = Integer.parseInt(field1.getText().toString()) + Integer.parseInt(field2.getText().toString());
+						JOptionPane.showMessageDialog(null, sum);
+						break;
+					case "-" :
+						Integer sum1 = Integer.parseInt(field1.getText().toString()) - Integer.parseInt(field2.getText().toString());
+						JOptionPane.showMessageDialog(null, sum1);
+						break;
+					case "*" :
+						Integer sum2 = Integer.parseInt(field1.getText().toString()) * Integer.parseInt(field2.getText().toString());
+						JOptionPane.showMessageDialog(null, sum2);
+						break;
+					case "/" :
+						Integer sum3 = Integer.parseInt(field1.getText().toString()) / Integer.parseInt(field2.getText().toString());
+						JOptionPane.showMessageDialog(null, sum3);
+						break;
+					
+			
+					}	
+					
+					}
+				});
+
+			btn1.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+					Integer sum = Integer.parseInt(field1.getText().toString()) + Integer.parseInt(field2.getText().toString());
+					JOptionPane.showMessageDialog(null, sum);																	
+				}
+			});
+		
+			btn2.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+				
+				@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+					
+					Integer sum1 = Integer.parseInt(field1.getText().toString()) - Integer.parseInt(field2.getText().toString());
+					JOptionPane.showMessageDialog(null, sum1);		
+					
+					
+				}
+			});
+	
+			btn3.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+		
+		@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+			
+					Integer sum2 = Integer.parseInt(field1.getText().toString()) * Integer.parseInt(field2.getText().toString());
+					JOptionPane.showMessageDialog(null, sum2);		
+			
+			
+			}
+				});
+			btn4.addActionListener( new ActionListener() { //여기에 다 때려박는거임
+		
+		@Override
+				public void actionPerformed(ActionEvent e) { //버튼을 누르면 이 부분이 실행되는 거임
+			
+					Integer sum3 = Integer.parseInt(field1.getText().toString()) / Integer.parseInt(field2.getText().toString());
+					JOptionPane.showMessageDialog(null, sum3);				
+			
+			}
+				});		
+			/////////////////////
+			setSize(512, 512);
+			setVisible(true);
+			
+			
+		}
+	}
+
+
+

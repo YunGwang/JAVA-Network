@@ -1,0 +1,50 @@
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+
+public class HashTest {
+	public static void main(String[] args) {
+	
+		HashMap<String, Integer> mymap = new HashMap<String, Integer>();
+		mymap.put("정도전", new Integer(100));
+		mymap.put("이방원", new Integer(50));
+		mymap.put("이성계", new Integer(30));
+		
+		if(mymap.containsKey("정도전")){ //key중에서 정도전키가 있느냐?
+			System.out.println("조선을 설계하라");
+		}
+		
+		Iterator<String> nameIt = mymap.keySet().iterator(); //반복 메소드
+		Iterator<Integer> numIt = mymap.values().iterator(); 
+		
+		while(nameIt.hasNext()){ //nameIt에 다음게 있냐?
+			System.out.println("이름 : " + nameIt.next() + ", 점수 " + numIt.next());
+			
+		}
+			//합계, 평균, 최저 & 최고 점수
+			numIt = mymap.values().iterator(); //초기화
+			Integer hap;
+			Double avg;
+			while(numIt.hasNext()){
+			hap = numIt.next() + numIt.next() + numIt.next();
+			avg = hap/3.0;
+
+			System.out.println("합계 : " + hap);
+			System.out.println("평균 : " + avg);
+			}
+		
+			Collection<Integer> values = mymap.values();
+					
+			System.out.println("최고점수 : " + Collections.max(values));
+			System.out.println("최저점수 : " + Collections.min(values));
+			}
+	}
+			
+	
+
+			
+			
+		
+	
+

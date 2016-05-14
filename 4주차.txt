@@ -1,0 +1,134 @@
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+	public static void main(String[] args) throws Exception {
+		
+		Server myServer = new Server();
+		myServer.startServer();
+
+	}
+	
+	void startServer() throws Exception{
+		
+		ServerSocket server = null;
+		Socket client = null;
+		
+		//식당문을 10001번으로 오픈하기
+		server = new ServerSocket(10001);
+		
+		System.out.println("Server : 고객을 기다리는 중...");
+		client = server.accept(); //주인이 앉아서 손님을 기다리는 중...
+		System.out.println("Server : 고객 도착");
+		InputStream stream = client.getInputStream(); // 손님의 꾸러미를 받기
+		BufferedReader in = new BufferedReader ( new InputStreamReader (stream)); //in이라는 통에 데이터를 담아놓는다. (꾸러미를 풀어헤치기)
+		
+		String data  = null; //in을 통해서 데이터를 하나씩 가져오는 것 (용량이 하나인 그릇)
+		StringBuilder receivedData = new StringBuilder(); // receivedData(큰 바구니) 에서 in안에 아무것도 없을때 까지 데이터를 받는다. (여러개를 담을 수 있음)
+		
+		//풀어헤쳐진 꾸러미에서 계속 반복해서 하나씩 꺼낸 후, 큰 바구니에 담기 (없을때 까지)
+		while ( (data = in.readLine()) != null){ //null이 아닐때까지 데이터를 읽어라
+			receivedData.append(data);//데이터를 담아서 넣는다			
+		}
+		
+		//이 부분 부터 핵심 알고리즘이다//
+		//받은 데이터를 콤마로 분리하기
+		
+		String [] str;
+		str = (receivedData.toString()).split(",");
+		int num1, num2;
+		num1 = Integer.parseInt(str[0]);
+		num2 = Integer.parseInt(str[1]);
+		
+		///////////////////////////
+		Integer sum = num1 + num2;
+		System.out.println("결과 값 :  " + sum);
+		in.close();
+		stream.close();
+		System.out.println("----------------------------------");
+		
+		//고객에게 데이터를 보내주기
+		client.close();
+		client  = server.accept();
+		//배달
+		OutputStream out = client.getOutputStream();
+		DataOutputStream dos = new DataOutputStream(out);
+		//내보낼 데이터를 문자열로 다시 변환하기 
+		String retVal = sum.toString();
+		dos.writeUTF(retVal); //보내기
+		System.out.println("결과값을 클라이언트에게 보냈습니다");
+		dos.close();
+		out.close();
+		client.close();
+		
+	}
+}
+
+
+
+
+
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Scanner;
+
+public class Client {
+	
+public static void main(String[] args)throws Exception{
+	Client myClient = new Client();
+		myClient.sendData();
+	}
+
+void sendData() throws Exception{
+	// 숫자를 2개 입력 받아서 콤마로 분리 후 묶는다.
+	String data;
+	Scanner scan = new Scanner(System.in);
+	Integer a,b;
+	System.out.println("첫번째 숫자를 입력하세요");
+	a = scan.nextInt();
+	System.out.println("두번째 숫자를 입력하세요");
+	b = scan.nextInt();
+	
+	data = a.toString() + "," + b.toString();
+	
+	//서버와 연결되는 코드
+	Socket socket = null;
+	System.out.println("Client : 식당에 찾아가는 중... ");
+	socket = new Socket("210.102.149.133", 10001);
+	System.out.println("Client : 식당 찾았어 ? " + socket.isConnected());
+	
+	OutputStream stream = socket.getOutputStream(); //데이터를 넣었음
+	BufferedOutputStream out = new BufferedOutputStream(stream);
+	
+	byte[] bytes = data.getBytes(); //1바이트로 자른것을 bytes에 배열해준다
+	out.write(bytes); // 보내
+	System.out.println("Client : 데이터 전송 완료");
+	out.close();
+	
+	//서버에서 보낸 데이터를 다시 받는 것//
+	socket.close();
+	socket = new Socket("210.102.149.133", 10001);
+	InputStream in = socket.getInputStream();
+	DataInputStream dis = new DataInputStream(in);
+	
+	//데이터를 꺼내기
+	String getStr = dis.readUTF();
+	System.out.println("Client : 받은 데이터 ----> " + getStr);
+	System.out.println("------------------------");
+	dis.close();
+	in.close();
+	socket.close();
+	
+}
+}
+
+
